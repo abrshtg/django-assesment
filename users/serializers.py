@@ -116,3 +116,8 @@ class PasswordChangeSerializer(serializers.Serializer):
         user = CustomUser.objects.get(email=email)
         user.set_password(self.validated_data["new_password"])
         user.save()
+
+
+class SocialSignupSerializer(serializers.Serializer):
+    provider = serializers.ChoiceField(choices=["google", "facebook"])
+    access_token = serializers.CharField()
