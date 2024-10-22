@@ -121,3 +121,8 @@ class PasswordChangeSerializer(serializers.Serializer):
 class SocialSignupSerializer(serializers.Serializer):
     provider = serializers.ChoiceField(choices=["google", "facebook"])
     access_token = serializers.CharField()
+
+
+class SocialLoginSerializer(serializers.Serializer):
+    provider = serializers.ChoiceField(choices=["google", "facebook"])
+    access_token = serializers.CharField()

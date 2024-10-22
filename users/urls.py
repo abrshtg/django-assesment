@@ -6,6 +6,7 @@ from .views import (
     PasswordResetRequestView,
     PasswordChangeView,
     SocialSignupView,
+    SocialLoginView,
 )
 
 urlpatterns = [
@@ -20,4 +21,5 @@ urlpatterns = [
         "users/password-change/", PasswordChangeView.as_view(), name="password-change"
     ),
     path("users/social-signup/", SocialSignupView.as_view(), name="social-signup"),
+    path("users/social-login/", SocialLoginView.as_view(), name="social-login"),
 ]

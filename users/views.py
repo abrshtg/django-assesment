@@ -11,6 +11,7 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordChangeSerializer,
     SocialSignupSerializer,
+    SocialLoginSerializer,
 )
 
 
@@ -126,3 +127,62 @@ class SocialSignupView(generics.CreateAPIView):
                 return response.json()
 
         return {}
+
+
+class SocialLoginView(generics.GenericAPIView):
+    serializer_class = SocialLoginSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        provider = serializer.validated_data["provider"]
+        access_token = serializer.validated_data["access_token"]
+
+        try:
+            user_data = self.get_user_data(provider, access_token)
+            if user_data is None:
+                return Response(
+                    {"error": "Invalid token or provider"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+            email = user_data.get("email")
+            user, created = CustomUser.objects.get_or_create(email=email)
+
+            token = self.generate_token(user)
+
+            return Response(
+                {"id": user.id, "email": user.email, "token": token},
+                status=status.HTTP_200_OK,
+            )
+
+        except AuthException as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def get_user_data(self, provider, access_token):
+        if provider == "google":
+            user_info_url = "https://www.googleapis.com/oauth2/v3/userinfo"
+            response = requests.get(
+                user_info_url, headers={"Authorization": f"Bearer {access_token}"}
+            )
+        elif provider == "facebook":
+            user_info_url = "https://graph.facebook.com/me?fields=id,name,email"
+            response = requests.get(
+                user_info_url, params={"access_token": access_token}
+            )
+        else:
+            return None
+
+        if response.status_code == 200:
+            return response.json()
+        return None
+
+    def generate_token(self, user):
+        from rest_framework_simplejwt.tokens import RefreshToken
+
+        refresh = RefreshToken.for_user(user)
+        return {
+            "refresh": str(refresh),
+            "access": str(refresh.access_token),
+        }
