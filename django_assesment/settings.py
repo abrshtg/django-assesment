@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "users",
     "social_django",
+    "drf_spectacular",
 ]
 
 MIDDLEWARE = [
@@ -144,6 +145,7 @@ REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
@@ -162,3 +164,9 @@ SOCIAL_AUTH_FACEBOOK_SECRET = env("SOCIAL_AUTH_FACEBOOK_SECRET")
 LOGIN_URL = "login"
 LOGOUT_URL = "logout"
 LOGIN_REDIRECT_URL = "/"
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Django Assessment",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+}
