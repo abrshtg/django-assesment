@@ -159,7 +159,60 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 ---
 
-## Swagger Docs
+## Social Authentication Flow (Google Example)
 
-[http://localhost:8000/docs/](http://localhost:8000/docs/ "swagger docs")
+1. **Frontend**:
+
+- Redirects the user to the Google authorization page for authentication.
+
+```text
+https://accounts.google.com/o/oauth2/v2/auth?response_type=code&client_id=<client_id>&redirect_uri=<redirect_uri>
+&scope=email%20profile
+```
+
+2. **Google**:
+
+- Prompts the user to select a Google account.
+- Asks the user to authorize the app to access their profile and email.
+- Sends a response to the redirect_uri with query parameters (code, scope, authuser, prompt).
+
+3. **Frontend**:
+
+- Uses the authorization code received to request an access token from Google:
+
+```bash
+POST https://oauth2.googleapis.com/token
+{
+client_id: <client_id>,
+client_secret: <client_secret>,
+code: <authorization_code>,
+grant_type: authorization_code,
+redirect_uri: <redirect_uri>
+}
+```
+
+4. **Google**:
+
+- Returns the following information to the frontend:
+    - `access_token`
+    - `expires_in`
+    - `scope`
+    - `token_type`
+    - `id_token` (contains user information)
+
+5. **Frontend**:
+
+- Sends the access_token and provider (e.g., "google") to the backend API.
+
+6. **Backend**:
+
+- Uses the access_token to fetch the user's profile data from the Google API.
+- Depending on whether it's a login or signup request:
+    - If it's a **login**: Authenticates the user, creates a user if they don’t exist, and returns `access_token` and
+      `refresh_token`.
+    - If it's a **signup**: Creates a new user if they don’t exist and returns the created user's data.
+
 ---
+
+**You can test the API on [Swagger Docs](http://localhost:8000/docs/) or by `Django REST Framework`'s UI for each
+endpoints.**
